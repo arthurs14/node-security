@@ -11,9 +11,43 @@ const app = express();
 
 // MIDDLEWARE
 app.use(helmet());
+app.use((req, res, next) => {
+  const isLoggedIn = true; // TODO
 
-// ROUTES
-app.get('/secret', (req, res) => {
+  if (!isLoggedIn) {
+    return res.status(401).json({ error: 'You must log in!' });
+  }
+
+  next();
+});
+
+// FUNCTIONS
+
+/**
+ * Checks to see if user is authorized
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ * @returns
+ */
+function checkLoggedIn(req, res, next) {
+  const isLoggedIn = true; // TODO
+
+  if (!isLoggedIn) {
+    return res.status(401).json({ error: 'You must log in!' });
+  }
+
+  next();
+}
+
+// ROUTES - use functions to restrict endpoint calls for authorized users only
+app.get('/auth/google', (req, res) => {});
+
+app.get('/auth/google/callback', (req, res) => {});
+
+app.get('/auth/logout', (req, res) => {});
+
+app.get('/secret', checkLoggedIn, (req, res) => {
   return res.send('Your personal secret value is 42!');
 });
 
