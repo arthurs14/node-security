@@ -16,3 +16,8 @@ This project focuses on how you can secure your node projects and what are the b
 ```bash
 openssl req -x509 -sha256 -days 365 -key key.pem -in csr.csr -out cert.pem
 ```
+
+## Create a `.env` File with the following Keys at the root of the directory:
+
+- `CLIENT_ID`
+- `CLIENT_SECRET`
