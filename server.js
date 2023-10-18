@@ -4,10 +4,12 @@ const path = require('path');
 const https = require('https');
 const express = require('express');
 const helmet = require('helmet');
+const passport = require('passport');
+const { Strategy } = require('passport-google-oauth20');
 
 require('dotenv').config();
 
-// START OF FILE
+// --- START OF FILE ---
 const PORT = 8000;
 
 const config = {
@@ -15,21 +17,26 @@ const config = {
   CLIENT_SECRET: process.env.CLIENT_SECRET,
 };
 
+const AUTH_OPTIONS = {
+  callbackURL: '/auth/google/callback',
+  clientID: config.CLIENT_ID,
+  clientSecret: config.CLIENT_SECRET,
+};
+
+function verifyCallback(accessToken, refreshToken, profile, done) {
+  console.log('Google Profile:', profile);
+  done(null, profile);
+}
+
+passport.use(new Strategy(AUTH_OPTIONS, verifyCallback));
+
 const app = express();
 
 // MIDDLEWARE
 app.use(helmet());
-app.use((req, res, next) => {
-  const isLoggedIn = true; // TODO
+app.use(passport.initialize());
 
-  if (!isLoggedIn) {
-    return res.status(401).json({ error: 'You must log in!' });
-  }
-
-  next();
-});
-
-// FUNCTIONS
+// --- FUNCTIONS ---
 
 /**
  * Checks to see if user is authorized
@@ -49,14 +56,33 @@ function checkLoggedIn(req, res, next) {
 }
 
 // ROUTES - use functions to restrict endpoint calls for authorized users only
-app.get('/auth/google', (req, res) => {});
+app.get(
+  '/auth/google',
+  passport.authenticate('google', {
+    scope: ['email'],
+  })
+);
 
-app.get('/auth/google/callback', (req, res) => {});
+app.get(
+  '/auth/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: '/failure',
+    successRedirect: '/',
+    session: false,
+  }),
+  (req, res) => {
+    console.log('Google called us back!');
+  }
+);
 
 app.get('/auth/logout', (req, res) => {});
 
 app.get('/secret', checkLoggedIn, (req, res) => {
   return res.send('Your personal secret value is 42!');
+});
+
+app.get('/failure', (req, res) => {
+  return res.send('Failed to log in!');
 });
 
 app.get('/', (req, res) => {
