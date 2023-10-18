@@ -23,11 +23,6 @@ const AUTH_OPTIONS = {
   clientSecret: config.CLIENT_SECRET,
 };
 
-function verifyCallback(accessToken, refreshToken, profile, done) {
-  console.log('Google Profile:', profile);
-  done(null, profile);
-}
-
 passport.use(new Strategy(AUTH_OPTIONS, verifyCallback));
 
 const app = express();
@@ -53,6 +48,11 @@ function checkLoggedIn(req, res, next) {
   }
 
   next();
+}
+
+function verifyCallback(accessToken, refreshToken, profile, done) {
+  console.log('Google Profile:', profile);
+  done(null, profile);
 }
 
 // ROUTES - use functions to restrict endpoint calls for authorized users only
