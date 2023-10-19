@@ -26,30 +26,39 @@ const AUTH_OPTIONS = {
   clientSecret: config.CLIENT_SECRET,
 };
 
+function verifyCallback(accessToken, refreshToken, profile, done) {
+  console.log('Google Profile:', profile);
+  done(null, profile);
+}
+
 passport.use(new Strategy(AUTH_OPTIONS, verifyCallback));
+
+// Save the session to the cookie
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+// Read the session from the cookie
+passport.deserializeUser((obj, done) => {
+  done(null, obj);
+});
 
 const app = express();
 
-// MIDDLEWARE
+// --- MIDDLEWARE ---
 app.use(helmet());
 app.use(
   cookieSession({
     name: 'session',
-    maxAge: 24 * 60 * 60 * 1000,
     keys: [config.COOKIE_KEY_1, config.COOKIE_KEY_2],
+    maxAge: 24 * 60 * 60 * 1000,
   })
 );
 app.use(passport.initialize());
+app.use(passport.session());
 
 // --- FUNCTIONS ---
 
-/**
- * Checks to see if user is authorized
- * @param {*} req
- * @param {*} res
- * @param {*} next
- * @returns
- */
 function checkLoggedIn(req, res, next) {
   const isLoggedIn = true; // TODO
 
@@ -58,11 +67,6 @@ function checkLoggedIn(req, res, next) {
   }
 
   next();
-}
-
-function verifyCallback(accessToken, refreshToken, profile, done) {
-  console.log('Google Profile:', profile);
-  done(null, profile);
 }
 
 // ROUTES - use functions to restrict endpoint calls for authorized users only
@@ -78,7 +82,7 @@ app.get(
   passport.authenticate('google', {
     failureRedirect: '/failure',
     successRedirect: '/',
-    session: false,
+    session: true,
   }),
   (req, res) => {
     console.log('Google called us back!');
