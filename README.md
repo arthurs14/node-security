@@ -21,3 +21,7 @@ openssl req -x509 -sha256 -days 365 -key key.pem -in csr.csr -out cert.pem
 
 - `CLIENT_ID`
 - `CLIENT_SECRET`
+
+## Resources:
+
+- Security Cheat Sheet: [OWASP Node.js Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Nodejs_Security_Cheat_Sheet.html)
